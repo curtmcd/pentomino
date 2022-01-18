@@ -42,50 +42,10 @@ void show()
     cout << endl;
 }
 
-int pocket_size(int r, int c)
-{
-    if (grid[r][c] != 0)
-	return 0;
-    int ps = 1;
-    if (r > 0) {
-	ps += pocket_size(r - 1, c);
-	if (ps >= 5)
-	    return ps;
-    }
-    if (r < 5) {
-	ps += pocket_size(r + 1, c);
-	if (ps >= 5)
-	    return ps;
-    }
-    if (c > 0) {
-	ps += pocket_size(r, c - 1);
-	if (ps >= 5)
-	    return ps;
-    }
-    if (c < 9)
-	ps += pocket_size(r, c + 1);
-    return ps;
-}
-
-bool unsolvable()
-{
-    for (int r = 0; r < 6; r++)
-	for (int c = 0; c < 10; c++)
-	    if (grid[r][c] == 0) {
-		int p = pocket_size(r, c);
-		if (p < 5) {
-		    cout << "Pocket size " << p << " at (" << r << ", " << c << ")" << endl;
-		    return true;
-		}
-	    }
-    return false;
-}
-
 void unplace(int r, int c, int s, dir orient)
 {
     vector<dir> &o = reorient[orient];
-    if (grid[r][c] != s)
-	return;
+    assert(grid[r][c] == s);
     grid[r][c] = 0;
     for (auto &d : shapes[s - 1]) {
 	switch (o[d]) {
@@ -117,8 +77,7 @@ void unplace(int r, int c, int s, dir orient)
 bool place(int r, int c, int s, dir orient)
 {
     vector<dir> &o = reorient[orient];
-    if (grid[r][c] != 0)
-	return false;
+    assert(grid[r][c] == 0);
     grid[r][c] = s;
     for (auto &d : shapes[s - 1]) {
 	switch (o[d]) {
@@ -154,8 +113,6 @@ void try_orient(int r, int c, int s, dir orient)
 {
     bool succ = place(r, c, s, orient);
     if (succ) {
-	show();
-	unsolvable();
 	try_shape(s + 1);
     }
     unplace(r, c, s, orient);
