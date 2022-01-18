@@ -43,49 +43,38 @@ void show()
     cout << endl;
 }
 
-// Laboriously determine the smallest "pocket" on the grid, where a pocket
-// is an orthogonally-connected region of holes (empty grit spots).
-int smallest_pocket_size()
+int flood(int (&hole)[6][10], int r, int c)
+{
+    if (hole[r][c] != 0)
+	return 0;
+
+    hole[r][c] = 1;
+
+    return (1 +
+	    (r > 0 ? flood(hole, r - 1, c) : 0) +
+	    (r < 9 ? flood(hole, r + 1, c) : 0) +
+	    (c > 0 ? flood(hole, r, c - 1) : 0) +
+	    (c < 9 ? flood(hole, r, c + 1) : 0));
+}
+
+// Laboriously determines if there is an "pocket" on the grid less than
+// 5 cells big, where a pocket is an orthogonally-connected region of
+// holes (empty grit spots).
+bool small_pocket()
 {
     int hole[6][10];
-    memset(hole, 0, sizeof (hole));
-    int pocket_no = 0;
-    map<int, int> counts;
+    memcpy(hole, grid, sizeof (hole));
 
     for (int r = 0; r < 6; r++)
-	for (int c = 0; c < 10; c++)
-	    if (grid[r][c] == 0) {
-		int p = 0;
-		if (c > 0 && hole[r][c - 1] > 0)
-		    p = hole[r][c - 1];
-		else if (r > 0) {
-		    for (int c2 = c; c2 < 10 && grid[r][c2] == 0; c2++)
-			if (hole[r - 1][c2] > 0)
-			    p = hole[r - 1][c2];
-		}
-		if (p == 0)
-		    p = ++pocket_no;
-		hole[r][c] = p;
-		auto it = counts.find(p);
-		if (it != counts.end())
-		    it->second++;
-		else
-		   counts.insert(pair<int, int>(p, 1));
+	for (int c = 0; c < 10; c++) {
+	    int count = flood(hole, r, c);
+	    if (count > 0 && count < 5) {
+		cout << "POCKET" << endl;
+		return true;
 	    }
+	}
 
-    for (int r = 0; r < 6; r++) {
-	for (int c = 0; c < 10; c++)
-	    cout << setw(3) << hole[r][c] << ' ';
-	cout << endl;
-    }
-    cout << endl;
-
-    int m = 60;
-    for (auto it : counts)
-	if (it.second < m)
-	    m = it.second;
-
-    return m;
+    return false;
 }
 
 bool place(int r, int c, int s, dir orient, int g_old, int g_new)
@@ -121,9 +110,7 @@ bool place(int r, int c, int s, dir orient, int g_old, int g_new)
     // Greatly optimize by denying placement if it would result in the
     // grid having any pocket of empty cells less than 5 in size that
     // would become dead space.
-    int a=smallest_pocket_size();
-    cout << "sps " <<a  << endl;
-    if (a < 5)
+    if (small_pocket())
 	return false;
     return true;
 }
