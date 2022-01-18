@@ -46,8 +46,6 @@ typedef vector<pair<int, int>> undo_list;
 
 void unplace(int r, int c, int s, dir orient)
 {
-    cout << "@@ unplace (" << r << ", " << c << ") shape " << s << " orient " << orient << endl;
-    show();
     vector<dir> &o = reorient[orient];
     if (grid[r][c] != s)
 	return;
@@ -56,19 +54,19 @@ void unplace(int r, int c, int s, dir orient)
 	switch (o[d]) {
 	case F:
 	    if (--r < 0)
-		break;
+		return;
 	    break;
 	case B:
 	    if (++r >= 6)
-		break;
+		return;
 	    break;
 	case L:
 	    if (--c < 0)
-		break;
+		return;
 	    break;
 	case R:
 	    if (++c >= 10)
-		break;
+		return;
 	    break;
 	default:
 	    assert(false);
@@ -77,20 +75,13 @@ void unplace(int r, int c, int s, dir orient)
 	    break;
 	grid[r][c] = 0;
     }
-    cout << "AFTER" << endl;
-    show();
-    for (r = 0; r < 6; r++)
-	for (c = 0; c < 10; c++)
-	    assert(grid[r][c] != s);
 }
 
 bool place(int r, int c, int s, dir orient)
 {
-    cout << "place (" << r << ", " << c << ") shape " << s << " orient " << orient << endl;
     for (int r1 = 0; r1 < 6; r1++)
 	for (int c1 = 0; c1 < 10; c1++)
 	    assert(grid[r1][c1] != s);
-
     vector<dir> &o = reorient[orient];
     if (grid[r][c] != 0)
 	return false;
@@ -139,22 +130,23 @@ void try_orients();
 void try_orient(int r, int c, int s, dir orient)
 {
     bool succ;
-    auto gb = grid;
     succ = place(r, c, s, orient);
-    cout << "orient " << orient << " " << succ << endl;
     if (succ) {
-	show();
-	assert(s > 0);
+	cout << "placed " << s << endl;
 	placed[s] = true;
+	cout<<"set (" << s << ")" << endl;
+	cout<<"PLACE: ";for (int s1 = 1; s1 <= 12; s1++) {
+	    if(placed[s1])cout << s1 << " ";}cout<<endl;
 	try_orients();
+	cout << "   not " << s << endl;
 	placed[s] = false;
+	cout<<"clr (" << s << ")" << endl;
     }
 
     unplace(r, c, s, orient);
-    auto ga = grid;
     for (int r1 = 0; r1 < 6; r1++)
 	for (int c1 = 0; c1 < 10; c1++)
-	    assert(ga[r1][c1] == gb[r1][c1]);
+	    assert(grid[r1][c1] != s);
 }
 
 void try_orients()
@@ -168,8 +160,12 @@ void try_orients()
 
     for (s = 1; s <= 12; s++)
 	if (!placed[s]) {
-	    cout << "Try pos (" << r << ", " << c << ") shape " << s << endl;
-
+	    cout<<"SEL: ";for (int s1 = 1; s1 <= 12; s1++) {
+		if(placed[s1])cout << s1 << " ";}cout<<endl;
+	    cout << "selected " << s << endl;
+	    if (!placed[1] && placed[2] && placed[3] && placed[4] && placed[5] && placed[6] && !placed[7] && !placed[8] && placed[9] && !placed[10] && !placed[11] && placed[12] &&s==1) {
+		cout << "BAD SPOT" << endl;
+	    }
 	    try_orient(r, c, s, F);
 	    try_orient(r, c, s, B);
 	    try_orient(r, c, s, L);
