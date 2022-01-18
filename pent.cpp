@@ -132,15 +132,10 @@ void try_orient(int r, int c, int s, dir orient)
     bool succ;
     succ = place(r, c, s, orient);
     if (succ) {
-	cout << "placed " << s << endl;
+	show();
 	placed[s] = true;
-	cout<<"set (" << s << ")" << endl;
-	cout<<"PLACE: ";for (int s1 = 1; s1 <= 12; s1++) {
-	    if(placed[s1])cout << s1 << " ";}cout<<endl;
 	try_orients();
-	cout << "   not " << s << endl;
 	placed[s] = false;
-	cout<<"clr (" << s << ")" << endl;
     }
 
     unplace(r, c, s, orient);
@@ -160,12 +155,6 @@ void try_orients()
 
     for (s = 1; s <= 12; s++)
 	if (!placed[s]) {
-	    cout<<"SEL: ";for (int s1 = 1; s1 <= 12; s1++) {
-		if(placed[s1])cout << s1 << " ";}cout<<endl;
-	    cout << "selected " << s << endl;
-	    if (!placed[1] && placed[2] && placed[3] && placed[4] && placed[5] && placed[6] && !placed[7] && !placed[8] && placed[9] && !placed[10] && !placed[11] && placed[12] &&s==1) {
-		cout << "BAD SPOT" << endl;
-	    }
 	    try_orient(r, c, s, F);
 	    try_orient(r, c, s, B);
 	    try_orient(r, c, s, L);
