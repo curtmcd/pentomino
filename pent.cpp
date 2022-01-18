@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum dir { F = 0, B = 1, L = 2, R = 3 };
+enum dir { F, B, L, R };	// Forward, backward, left, right
 
 vector<dir> reorient[] = {
     { F, B, L, R },
@@ -43,35 +43,42 @@ void show()
     cout << endl;
 }
 
-// Laboriously determine the smallest "hole" on the grid, where a
-// hole is an orthogonally-connected region of unoccupied positions.
-int smallest_hole_size()
+// Laboriously determine the smallest "pocket" on the grid, where a pocket
+// is an orthogonally-connected region of holes (empty grit spots).
+int smallest_pocket_size()
 {
     int hole[6][10];
     memset(hole, 0, sizeof (hole));
-    int next = 0;
+    int pocket_no = 0;
     map<int, int> counts;
 
     for (int r = 0; r < 6; r++)
 	for (int c = 0; c < 10; c++)
 	    if (grid[r][c] == 0) {
-		int h = 0;
+		int p = 0;
 		if (c > 0 && hole[r][c - 1] > 0)
-		    h = hole[r][c - 1];
+		    p = hole[r][c - 1];
 		else if (r > 0) {
 		    for (int c2 = c; c2 < 10 && grid[r][c2] == 0; c2++)
 			if (hole[r - 1][c2] > 0)
-			    h = hole[r - 1][c2];
+			    p = hole[r - 1][c2];
 		}
-		if (h == 0)
-		    h = ++next;
-		hole[r][c] = h;
-		auto it = counts.find(h);
+		if (p == 0)
+		    p = ++pocket_no;
+		hole[r][c] = p;
+		auto it = counts.find(p);
 		if (it != counts.end())
 		    it->second++;
 		else
-		   counts.insert(pair<int, int>(h, 1));
+		   counts.insert(pair<int, int>(p, 1));
 	    }
+
+    for (int r = 0; r < 6; r++) {
+	for (int c = 0; c < 10; c++)
+	    cout << setw(3) << hole[r][c] << ' ';
+	cout << endl;
+    }
+    cout << endl;
 
     int m = 60;
     for (auto it : counts)
@@ -111,33 +118,64 @@ bool place(int r, int c, int s, dir orient, int g_old, int g_new)
 	    return false;
 	grid[r][c] = g_new;
     }
-    // Optimize by denying placement if it would result in the grid
-    // having any hole of empty cells less than 5 in size that would
-    // become dead space.
-    if (smallest_hole_size() < 5)
+    // Greatly optimize by denying placement if it would result in the
+    // grid having any pocket of empty cells less than 5 in size that
+    // would become dead space.
+    int a=smallest_pocket_size();
+    cout << "sps " <<a  << endl;
+    if (a < 5)
 	return false;
     return true;
 }
 
-void try_shape(int s)
+bool placed[13];
+
+bool next(int &r, int &c)
 {
-    for (int r = 0; r < 6; r++)
-	for (int c = 0; c < 10; c++)
-	    if (grid[r][c] == 0)
-		for (dir o = F; o <= R; o = dir(o + 1)) {
-		    if (place(r, c, s, o, 0, s)) {
-			if (s == 12)
-			    show();
-			else
-			    try_shape(s + 1);
-		    }
-		    place(r, c, s, o, s, 0);  // undo placement
+    if (++c == 10) {
+	c = 0;
+	if (++r == 6)
+	    return false;
+    }
+    return true;
+}
+
+void try_pos(int r, int c)
+{
+    // Find next hole on grid
+    while (grid[r][c] != 0)
+	if (!next(r, c)) {
+	    show();	// Got to end, must have solution
+	    return;
+	}
+
+    cout << "next hole at (" << r << ", " << c << ")" << endl;
+    for (int s = 1; s <= 12; s++) {
+	if (!placed[s])
+	    // XXX don't need to try all orientations, can't go left or up
+	    for (dir o = F; o <= R; o = dir(o + 1)) {
+		cout << "try " << s << endl;
+		if (place(r, c, s, o, 0, s)) {
+		    cout << "placed " << s << " orient " << o << endl;
+		    show();
+		    placed[s] = true;
+		    try_pos(r, c);
 		}
+		else {
+		    cout << "NOT placed " << s << " orient " << o << endl;
+		    show();
+		}
+		place(r, c, s, o, s, 0);  // undo placement
+		placed[s] = false;
+	    }
+    }
 }
 
 int main()
 {
+    for (bool &p : placed)
+	p = false;
     memset(grid, 0, sizeof (grid));
-    try_shape(1);
+    try_pos(0, 0);
     return 0;
 }
