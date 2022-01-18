@@ -25,6 +25,21 @@ test: pent
 	$(call run,20,3,)
 	$(call run,20,3,-N)
 
+# ${1}=width, ${2}=height, ${3}=flip, ${4}=outfile
+define run_svg
+	./pent -w ${1} ${3} -f svg > sol-${1}x${2}${3}.html
+endef
+
+test_svg: pent
+	$(call run_svg,10,6,)
+	$(call run_svg,10,6,-N)
+	$(call run_svg,12,5,)
+	$(call run_svg,12,5,-N)
+	$(call run_svg,15,4,)
+	$(call run_svg,15,4,-N)
+	$(call run_svg,20,3,)
+	$(call run_svg,20,3,-N)
+
 #---------- Clean ----------
 
 .PHONY: clean
