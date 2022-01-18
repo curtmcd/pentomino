@@ -7,89 +7,102 @@
 
 using namespace std;
 
-enum dir { F, B, L, R };	// Forward, backward, left, right
+enum dir { U, D, L, R };	// Up, down, left, right
 
-vector<dir> reorient[] = {
-    { F, B, L, R },
-    { B, F, R, L },
-    { L, R, B, F },
-    { R, L, F, B },
+#define H 6
+#define W 10
+
+vector<vector<dir>> shapes[] = {
+    {{ R, R, R, R },		// I
+     { D, D, D, D }},
+    {{ R, R, R, D },		// L
+     { D, D, D, L },
+     { D, R, R, R },
+     { R, L, D, D, D },
+     { D, U, R, R, R },		// L flipped
+     { D, D, D, R },
+     { D, L, L, L },
+     { D, D, D, R }},
+    {{ R, R, D, R },		// N
+     { D, D, L, D },
+     { R, D, R, R },
+     { D, L, D, D },
+     { R, R, L, L, D, L },	// N flipped
+     { D, R, D, D },
+     { R, L, D, L, L },
+     { D, D, R, D }},
+    {{ R, D, R, D },		// W
+     { D, L, D, L },
+     { D, R, D, R },
+     { R, L, D, L, D }},
+    {{ R, R, D, D },		// V
+     { D, D, L, L },
+     { D, D, R, R },
+     { R, R, L, L, D, D }},
+    {{ D, R, R, D },		// Z
+     { L, D, D, L },
+     { D, L, L, D },		// Z flipped
+     { R, D, D, R }},
+    {{ D, U, R, R, D },		// U
+     { R, L, D, D, R },
+     { D, R, R, U },
+     { R, D, D, L }},
+    {{ D, R, U, R },		// P
+     { R, L, D, R, D },
+     { R, D, L, L },
+     { D, R, D, L },
+     { R, R, D, L },		// P flipped
+     { D, L, D, R },
+     { R, L, D, R, R },
+     { R, D, L, D }},
+    {{ R, R, R, L, D },		// Y
+     { D, D, L, R, D },
+     { D, L, R, R, R },
+     { D, R, L, D, D },
+     { R, D, U, R, R },		// Y flipped
+     { D, L, R, D, D },
+     { D, R, L, L, L },
+     { D, D, R, L, D }},
+    {{ D, L, R, R, L, D }},	// X
+    {{ D, R, R, L, D },		// R
+     { R, L, D, L, R, D },
+     { D, L, R, R, D },
+     { D, R, L, D, L },
+     { D, L, L, R, D },		// R flipped
+     { D, L, R, D, R },
+     { D, R, L, L, D },
+     { R, D, R, L, D }},
+    {{ R, R, L, D, D },		// T
+     { D, L, L, R, R, D },
+     { D, D, L, R, R },
+     { D, R, R, L, L, D }}
 };
 
-vector<dir> shapes[] = {
-    { F, F, F, F },
-    { F, F, F, R },
-    { F, F, R, F },
-    { F, R, F, R },
-    { F, F, R, R },
-    { R, F, F, R },
-    { R, F, F, L },
-    { R, F, R, B } ,
-    { F, F, F, B, R },
-    { F, L, R, F, B, R },
-    { R, F, F, B, R },
-    { R, R, L, F, F },
-};
-
-int grid[6][10];
+int grid[H][W];
 
 void show()
 {
-    for (int r = 0; r < 6; r++) {
-	for (int c = 0; c < 10; c++)
+    for (int r = 0; r < H; r++) {
+	for (int c = 0; c < W; c++)
 	    cout << setw(3) << grid[r][c] << ' ';
 	cout << endl;
     }
     cout << endl;
 }
 
-int flood(int (&hole)[6][10], int r, int c)
+bool place(int r, int c, int s, int o, int g_old, int g_new)
 {
-    if (hole[r][c] != 0)
-	return 0;
-
-    hole[r][c] = 1;
-
-    return (1 +
-	    (r > 0 ? flood(hole, r - 1, c) : 0) +
-	    (r < 9 ? flood(hole, r + 1, c) : 0) +
-	    (c > 0 ? flood(hole, r, c - 1) : 0) +
-	    (c < 9 ? flood(hole, r, c + 1) : 0));
-}
-
-// Laboriously determines if there is an "pocket" on the grid less than
-// 5 cells big, where a pocket is an orthogonally-connected region of
-// holes (empty grit spots).
-bool small_pocket()
-{
-    int hole[6][10];
-    memcpy(hole, grid, sizeof (hole));
-
-    for (int r = 0; r < 6; r++)
-	for (int c = 0; c < 10; c++) {
-	    int count = flood(hole, r, c);
-	    if (count > 0 && count < 5) {
-		cout << "POCKET" << endl;
-		return true;
-	    }
-	}
-
-    return false;
-}
-
-bool place(int r, int c, int s, dir orient, int g_old, int g_new)
-{
-    vector<dir> &o = reorient[orient];
+    vector<dir> &moves = shapes[s - 1][o];
     assert(grid[r][c] == g_old);
     grid[r][c] = g_new;
-    for (auto d : shapes[s - 1]) {
-	switch (o[d]) {
-	case F:
+    for (auto m : moves) {
+	switch (m) {
+	case U:
 	    if (--r < 0)
 		return false;
 	    break;
-	case B:
-	    if (++r >= 6)
+	case D:
+	    if (++r >= H)
 		return false;
 	    break;
 	case L:
@@ -97,7 +110,7 @@ bool place(int r, int c, int s, dir orient, int g_old, int g_new)
 		return false;
 	    break;
 	case R:
-	    if (++c >= 10)
+	    if (++c >= W)
 		return false;
 	    break;
 	default:
@@ -107,21 +120,16 @@ bool place(int r, int c, int s, dir orient, int g_old, int g_new)
 	    return false;
 	grid[r][c] = g_new;
     }
-    // Greatly optimize by denying placement if it would result in the
-    // grid having any pocket of empty cells less than 5 in size that
-    // would become dead space.
-    if (small_pocket())
-	return false;
     return true;
 }
 
 bool placed[13];
 
-bool next(int &r, int &c)
+bool next_pos(int &r, int &c)
 {
-    if (++c == 10) {
+    if (++c == W) {
 	c = 0;
-	if (++r == 6)
+	if (++r == H)
 	    return false;
     }
     return true;
@@ -131,28 +139,20 @@ void try_pos(int r, int c)
 {
     // Find next hole on grid
     while (grid[r][c] != 0)
-	if (!next(r, c)) {
+	if (!next_pos(r, c)) {
 	    show();	// Got to end, must have solution
 	    return;
 	}
 
-    cout << "next hole at (" << r << ", " << c << ")" << endl;
     for (int s = 1; s <= 12; s++) {
 	if (!placed[s])
-	    // XXX don't need to try all orientations, can't go left or up
-	    for (dir o = F; o <= R; o = dir(o + 1)) {
-		cout << "try " << s << endl;
+	    for (int o = 0; o < shapes[s - 1].size(); o++) {
 		if (place(r, c, s, o, 0, s)) {
-		    cout << "placed " << s << " orient " << o << endl;
-		    show();
 		    placed[s] = true;
 		    try_pos(r, c);
 		}
-		else {
-		    cout << "NOT placed " << s << " orient " << o << endl;
-		    show();
-		}
-		place(r, c, s, o, s, 0);  // undo placement
+		place(r, c, s, o, s, 0);
+		// undo full or partial placement
 		placed[s] = false;
 	    }
     }
