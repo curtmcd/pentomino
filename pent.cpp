@@ -1,3 +1,14 @@
+// Pentomino Packing - by Curt McDowell 2022-01-17
+//
+// There are twelve unique pentominos. They can be packed into a
+// rectangular grid of 60 square units in many ways, where the grid size
+// may be 10x6, 12x5, 15x4 or 20x3. If it's allowed to flip the six
+// asymmetric pentominos, there are more ways to pack them.
+//
+// This program uses backtracking to find and print all packings
+// (including trivially symmetric ones), given the grid size and choice
+// of whether flips are allowed.
+
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -7,17 +18,18 @@
 #include <stdlib.h>
 #include <getopt.h>
 
-// To do:
-//
-//   This prints all solutions but should not print trivially symmetric
-//   ones. Also, it may not be finding all of the solutions because the
-//   count for 10x6 should equal Wikipedia's 2239 times 8, I think.
-
 using namespace std;
 
-enum dir { U, D, L, R };
+enum dir_t { U, D, L, R };
 
-const vector<vector<dir>> draw_normal[] = {
+using drawing_t = vector<dir_t>;
+
+// Turtle drawings for each orientation of each shape. The origin of
+// each shape is always the left-most pixel of its top row of
+// pixels. The first instruction can be only down or right since the
+// shapes are placed from left to right, top to bottom.
+
+const vector<drawing_t> draw_normal[] = {
     {{ R, R, R, R 	},	// I
      { D, D, D, D 	}},
     {{ R, R, R, D 	},	// L
@@ -37,7 +49,7 @@ const vector<vector<dir>> draw_normal[] = {
      { D, D, R, R 	},
      { R, R, L, L, D, D }},
     {{ D, R, R, D 	},	// Z
-     { L, D, D, L 	}},
+     { R, L, D, D, L	}},
     {{ D, U, R, R, D 	},	// U
      { R, L, D, D, R 	},
      { D, R, R, U 	},
@@ -61,7 +73,7 @@ const vector<vector<dir>> draw_normal[] = {
      { D, R, R, L, L, D }}
 };
 
-const vector<vector<dir>> draw_flipped[] = {
+const vector<drawing_t> draw_flipped[] = {
     {},
     {{ D, U, R, R, R 	},	// L
      { D, D, D, R 	},
@@ -119,7 +131,7 @@ struct Grid {
     void show() const {
 	for (int r = 0; r < h; r++) {
 	    for (int c = 0; c < w; c++)
-		cout << setw(3) << (grid[r][c] + 1) << ' ';
+		cout << setw(3) << grid[r][c] + 1 << ' ';
 	    cout << endl;
 	}
 
@@ -127,7 +139,7 @@ struct Grid {
     }
 
     bool place(int r, int c, int s, int o, int g_old, int g_new) {
-	const vector<dir> &moves = shapes[s][o];
+	const drawing_t &moves = shapes[s][o];
 
 	assert(grid[r][c] == g_old);
 
@@ -195,16 +207,16 @@ struct Grid {
     int w, h;
     vector<vector<int>> grid;
     bool placed[12];
-    vector<vector<dir>> shapes[12];
+    vector<drawing_t> shapes[12];
 };
 
 void
 usage()
 {
-    cerr << "Usage: pent [-w <width>] [-F]" << endl;
+    cerr << "Usage: pent [-w <width>] [-N]" << endl;
     cerr << "  -w <width>    Specify grid width, one of 20, 15, 12 or 10," << endl;
     cerr << "                default 10. Height is 60 divided by width." << endl;
-    cerr << "  -F            Don't allow flip (12 shapes instead of 18)" << endl;
+    cerr << "  -N            Don't allow flip (12 shapes instead of 18)" << endl;
 
     exit(1);
 }
@@ -215,7 +227,7 @@ main(int argc, char *argv[])
     int c, w = 10, h;
     bool allow_flipped = true;
 
-    while ((c = getopt(argc, argv, "w:Fh")) >= 0)
+    while ((c = getopt(argc, argv, "w:Nh")) >= 0)
 	switch (c) {
 	case '?':
 	case 'h':
@@ -224,7 +236,7 @@ main(int argc, char *argv[])
 	case 'w':
 	    w = atoi(optarg);
 	    break;
-	case 'F':
+	case 'N':
 	    allow_flipped = false;
 	    break;
 	}
