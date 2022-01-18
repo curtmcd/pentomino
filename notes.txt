@@ -24,6 +24,26 @@ Box size 3 x 4 x 5
 
 ------------------------------------------------------------------------------
 
+./pent -w 10  > sol-10x6.txt
+9356 solutions
+./pent -w 10 -N > sol-10x6-N.txt
+142 solutions
+./pent -w 12  > sol-12x5.txt
+4040 solutions
+./pent -w 12 -N > sol-12x5-N.txt
+72 solutions
+./pent -w 15  > sol-15x4.txt
+1472 solutions
+./pent -w 15 -N > sol-15x4-N.txt
+30 solutions
+./pent -w 20  > sol-20x3.txt
+8 solutions
+./pent -w 20 -N > sol-20x3-N.txt
+0 solutions
+
+------------------------------------------------------------------------------
+
+
 Drawings:
 
 Shape 1 "I"

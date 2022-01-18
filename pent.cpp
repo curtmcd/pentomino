@@ -24,6 +24,8 @@ enum dir_t { U, D, L, R };
 
 using drawing_t = vector<dir_t>;
 
+const char _names[] = ".ILMWVZUPYXRT", *names = &_names[1];
+
 // Turtle drawings for each orientation of each shape. The origin of
 // each shape is always the left-most pixel of its top row of
 // pixels. The first instruction can be only down or right since the
@@ -131,7 +133,7 @@ struct Grid {
     void show() const {
 	for (int r = 0; r < h; r++) {
 	    for (int c = 0; c < w; c++)
-		cout << setw(3) << grid[r][c] + 1 << ' ';
+		cout << names[grid[r][c]] << ' ';
 	    cout << endl;
 	}
 
