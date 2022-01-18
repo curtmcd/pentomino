@@ -39,55 +39,149 @@ void show()
 	    cout << setw(3) << grid[r][c] << ' ';
 	cout << endl;
     }
+    cout << endl;
 }
 
 typedef vector<pair<int, int>> undo_list;
 
-bool place(int r, int c, int n, dir orient)
+void unplace(int r, int c, int s, dir orient)
 {
+    cout << "@@ unplace (" << r << ", " << c << ") shape " << s << " orient " << orient << endl;
+    show();
     vector<dir> &o = reorient[orient];
-    if (grid[r][c] != 0)
-	return false;
-    grid[r][c] = n;
-    undo_list u;
-    u.push_back(make_pair(r, c));
-    for (auto &d : shapes[n - 1]) {
+    if (grid[r][c] != s)
+	return;
+    grid[r][c] = 0;
+    for (auto &d : shapes[s - 1]) {
 	switch (o[d]) {
 	case F:
 	    if (--r < 0)
-		goto fail;
+		break;
 	    break;
 	case B:
-	    if (++r > 9)
-		goto fail;
+	    if (++r >= 6)
+		break;
 	    break;
 	case L:
 	    if (--c < 0)
-		goto fail;
+		break;
 	    break;
 	case R:
-	    if (++c > 9)
-		goto fail;
+	    if (++c >= 10)
+		break;
 	    break;
 	default:
 	    assert(false);
 	}
-	if (grid[r][c] != 0 && grid[r][c] != n)
+	if (grid[r][c] != 0 && grid[r][c] != s)
 	    break;
-	grid[r][c] = n;
-	u.push_back(make_pair(r, c));
+	grid[r][c] = 0;
+    }
+    cout << "AFTER" << endl;
+    show();
+    for (r = 0; r < 6; r++)
+	for (c = 0; c < 10; c++)
+	    assert(grid[r][c] != s);
+}
+
+bool place(int r, int c, int s, dir orient)
+{
+    cout << "place (" << r << ", " << c << ") shape " << s << " orient " << orient << endl;
+    for (int r1 = 0; r1 < 6; r1++)
+	for (int c1 = 0; c1 < 10; c1++)
+	    assert(grid[r1][c1] != s);
+
+    vector<dir> &o = reorient[orient];
+    if (grid[r][c] != 0)
+	return false;
+    grid[r][c] = s;
+    for (auto &d : shapes[s - 1]) {
+	switch (o[d]) {
+	case F:
+	    if (--r < 0)
+		return false;
+	    break;
+	case B:
+	    if (++r >= 6)
+		return false;
+	    break;
+	case L:
+	    if (--c < 0)
+		return false;
+	    break;
+	case R:
+	    if (++c >= 10)
+		return false;
+	    break;
+	default:
+	    assert(false);
+	}
+	if (grid[r][c] != 0 && grid[r][c] != s)
+	    return false;
+	grid[r][c] = s;
     }
     return true;
- fail:
-    for (auto &p : u)
-	grid[p.first][p.second] = 0;
+}
+
+bool placed[13];
+
+bool next_pos(int &r, int &c)
+{
+    for (r = 0; r < 6; r++)
+	for (c = 0; c < 10; c++)
+	    if (grid[r][c] == 0)
+		return true;
     return false;
+}
+
+void try_orients();
+
+void try_orient(int r, int c, int s, dir orient)
+{
+    bool succ;
+    auto gb = grid;
+    succ = place(r, c, s, orient);
+    cout << "orient " << orient << " " << succ << endl;
+    if (succ) {
+	show();
+	assert(s > 0);
+	placed[s] = true;
+	try_orients();
+	placed[s] = false;
+    }
+
+    unplace(r, c, s, orient);
+    auto ga = grid;
+    for (int r1 = 0; r1 < 6; r1++)
+	for (int c1 = 0; c1 < 10; c1++)
+	    assert(ga[r1][c1] == gb[r1][c1]);
+}
+
+void try_orients()
+{
+    int r, c, s;
+
+    if (!next_pos(r, c)) {
+	show();
+	return;
+    }
+
+    for (s = 1; s <= 12; s++)
+	if (!placed[s]) {
+	    cout << "Try pos (" << r << ", " << c << ") shape " << s << endl;
+
+	    try_orient(r, c, s, F);
+	    try_orient(r, c, s, B);
+	    try_orient(r, c, s, L);
+	    try_orient(r, c, s, R);
+	}
 }
 
 int main()
 {
     memset(grid, 0, sizeof (grid));
-    place(2, 3, 9, L);
-    show();
+    for (int i = 0; i < 13; i++)
+	placed[i] = false;
+    try_orients();
     return 0;
 }
