@@ -9,8 +9,8 @@ using namespace std;
 
 enum dir { U, D, L, R };	// Up, down, left, right
 
-//#define W 10
-//#define H 6
+#define W 10
+#define H 6
 
 //#define W 12
 //#define H 5
@@ -18,8 +18,8 @@ enum dir { U, D, L, R };	// Up, down, left, right
 //#define W 15
 //#define H 4
 
-#define W 20
-#define H 3
+//#define W 20
+//#define H 3
 
 #define ALLOW_FLIPPED		1
 //#define ALLOW_FLIPPED		0
@@ -38,7 +38,7 @@ vector<vector<dir>> shapes[] = {
      { D, U, R, R, R },		// L flipped
      { D, D, D, R },
      { D, L, L, L },
-     { D, D, D, R },
+     { R, D, D, D },
 #endif
     },
     {
@@ -126,91 +126,99 @@ vector<vector<dir>> shapes[] = {
     }
 };
 
-int grid[H][W];
+struct Grid {
+    Grid() {
+	memset(grid, 0, sizeof (grid));
 
-void show()
-{
-    for (int r = 0; r < H; r++) {
-	for (int c = 0; c < W; c++)
-	    cout << setw(3) << grid[r][c] << ' ';
+	for (bool &p : placed)
+	    p = false;
+    }
+
+    void show() {
+	for (int r = 0; r < H; r++) {
+	    for (int c = 0; c < W; c++)
+		cout << setw(3) << grid[r][c] << ' ';
+	    cout << endl;
+	}
+
 	cout << endl;
     }
-    cout << endl;
-}
 
-bool place(int r, int c, int s, int o, int g_old, int g_new)
-{
-    vector<dir> &moves = shapes[s - 1][o];
-    assert(grid[r][c] == g_old);
-    grid[r][c] = g_new;
-    for (auto m : moves) {
-	switch (m) {
-	case U:
-	    if (--r < 0)
-		return false;
-	    break;
-	case D:
-	    if (++r >= H)
-		return false;
-	    break;
-	case L:
-	    if (--c < 0)
-		return false;
-	    break;
-	case R:
-	    if (++c >= W)
-		return false;
-	    break;
-	default:
-	    assert(false);
-	}
-	if (grid[r][c] != g_old && grid[r][c] != g_new)
-	    return false;
+    bool place(int r, int c, int s, int o, int g_old, int g_new) {
+	vector<dir> &moves = shapes[s - 1][o];
+
+	assert(grid[r][c] == g_old);
+
 	grid[r][c] = g_new;
-    }
-    return true;
-}
 
-bool placed[13];
+	for (auto m : moves) {
+	    switch (m) {
+	    case U:
+		if (--r < 0)
+		    return false;
+		break;
+	    case D:
+		if (++r >= H)
+		    return false;
+		break;
+	    case L:
+		if (--c < 0)
+		    return false;
+		break;
+	    case R:
+		if (++c >= W)
+		    return false;
+		break;
+	    default:
+		assert(false);
+	    }
 
-bool next_pos(int &r, int &c)
-{
-    if (++c == W) {
-	c = 0;
-	if (++r == H)
-	    return false;
-    }
-    return true;
-}
+	    if (grid[r][c] != g_old && grid[r][c] != g_new)
+		return false;
 
-void try_pos(int r, int c)
-{
-    // Find next hole on grid
-    while (grid[r][c] != 0)
-	if (!next_pos(r, c)) {
-	    show();	// Got to end, must have solution
-	    return;
+	    grid[r][c] = g_new;
 	}
 
-    for (int s = 1; s <= 12; s++) {
-	if (!placed[s])
-	    for (int o = 0; o < shapes[s - 1].size(); o++) {
-		if (place(r, c, s, o, 0, s)) {
-		    placed[s] = true;
-		    try_pos(r, c);
-		}
-		place(r, c, s, o, s, 0);
-		// undo full or partial placement
-		placed[s] = false;
-	    }
+	return true;
     }
-}
+
+    void try_pos(int r, int c) {
+	// Find next empty hole on the grid
+	while (grid[r][c] != 0)
+	    if (++c == W) {
+		c = 0;
+
+		if (++r == H) {
+		    // Got to end, must have solution
+		    show();
+		    return;
+		}
+	    }
+
+	// Try each remaining shape
+	for (int s = 1; s <= 12; s++)
+	    if (!placed[s])
+		for (int o = 0; o < shapes[s - 1].size(); o++) {
+		    if (place(r, c, s, o, 0, s)) {
+			placed[s] = true;
+			try_pos(r, c);
+		    }
+
+		    // undo full or partial placement
+		    place(r, c, s, o, s, 0);
+		    placed[s] = false;
+		}
+    }
+
+    int grid[H][W];
+    bool placed[13];
+};
 
 int main()
 {
-    for (bool &p : placed)
-	p = false;
-    memset(grid, 0, sizeof (grid));
-    try_pos(0, 0);
+    Grid g;
+
+    g.try_pos(0, 0);
+
     return 0;
 }
