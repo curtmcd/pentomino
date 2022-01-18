@@ -42,7 +42,44 @@ void show()
     cout << endl;
 }
 
-typedef vector<pair<int, int>> undo_list;
+int pocket_size(int r, int c)
+{
+    if (grid[r][c] != 0)
+	return 0;
+    int ps = 1;
+    if (r > 0) {
+	ps += pocket_size(r - 1, c);
+	if (ps >= 5)
+	    return ps;
+    }
+    if (r < 5) {
+	ps += pocket_size(r + 1, c);
+	if (ps >= 5)
+	    return ps;
+    }
+    if (c > 0) {
+	ps += pocket_size(r, c - 1);
+	if (ps >= 5)
+	    return ps;
+    }
+    if (c < 9)
+	ps += pocket_size(r, c + 1);
+    return ps;
+}
+
+bool unsolvable()
+{
+    for (int r = 0; r < 6; r++)
+	for (int c = 0; c < 10; c++)
+	    if (grid[r][c] == 0) {
+		int p = pocket_size(r, c);
+		if (p < 5) {
+		    cout << "Pocket size " << p << " at (" << r << ", " << c << ")" << endl;
+		    return true;
+		}
+	    }
+    return false;
+}
 
 void unplace(int r, int c, int s, dir orient)
 {
@@ -79,9 +116,6 @@ void unplace(int r, int c, int s, dir orient)
 
 bool place(int r, int c, int s, dir orient)
 {
-    for (int r1 = 0; r1 < 6; r1++)
-	for (int c1 = 0; c1 < 10; c1++)
-	    assert(grid[r1][c1] != s);
     vector<dir> &o = reorient[orient];
     if (grid[r][c] != 0)
 	return false;
@@ -114,59 +148,40 @@ bool place(int r, int c, int s, dir orient)
     return true;
 }
 
-bool placed[13];
-
-bool next_pos(int &r, int &c)
-{
-    for (r = 0; r < 6; r++)
-	for (c = 0; c < 10; c++)
-	    if (grid[r][c] == 0)
-		return true;
-    return false;
-}
-
-void try_orients();
+void try_shape(int s);
 
 void try_orient(int r, int c, int s, dir orient)
 {
-    bool succ;
-    succ = place(r, c, s, orient);
+    bool succ = place(r, c, s, orient);
     if (succ) {
 	show();
-	placed[s] = true;
-	try_orients();
-	placed[s] = false;
+	unsolvable();
+	try_shape(s + 1);
     }
-
     unplace(r, c, s, orient);
-    for (int r1 = 0; r1 < 6; r1++)
-	for (int c1 = 0; c1 < 10; c1++)
-	    assert(grid[r1][c1] != s);
 }
 
-void try_orients()
+void try_shape(int s)
 {
-    int r, c, s;
-
-    if (!next_pos(r, c)) {
+    if (s == 13) {
 	show();
 	return;
     }
 
-    for (s = 1; s <= 12; s++)
-	if (!placed[s]) {
-	    try_orient(r, c, s, F);
-	    try_orient(r, c, s, B);
-	    try_orient(r, c, s, L);
-	    try_orient(r, c, s, R);
+    for (int r = 0; r < 6; r++)
+	for (int c = 0; c < 10; c++) {
+	    if (grid[r][c] == 0) {
+		try_orient(r, c, s, F);
+		try_orient(r, c, s, B);
+		try_orient(r, c, s, L);
+		try_orient(r, c, s, R);
+	    }
 	}
 }
 
 int main()
 {
     memset(grid, 0, sizeof (grid));
-    for (int i = 0; i < 13; i++)
-	placed[i] = false;
-    try_orients();
+    try_shape(1);
     return 0;
 }
