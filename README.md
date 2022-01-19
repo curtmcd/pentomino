@@ -1,8 +1,10 @@
 # Pentomino Packing
 
-This set of programs finds all possible ways to pack the twelve
-pentominos into a rectangular grid of size 10x6, 12x5, 15x4 or 20x3.  It
-will also render those packings as HTML5 files using SVG drawings.
+This set of programs implements a simple recursive backtracking solver
+to find all possible ways to pack the twelve pentominos into a
+rectangular grid of size 10x6, 12x5, 15x4 or 20x3. It optionally
+eliminates symmetry redundancies and renders packings as pretty HTML5
+files using SVG drawings.
 
 ![Screenshot of 10x6 solution](/sol-10x6-N.png)
 
@@ -57,6 +59,7 @@ Point your browser at an output file to render
 graphic drawings of the packings.
 
 Example 1: `./sol2html < sol-10x6-N.txt > sol-10x6-N-huge.html`
+
 Example 2: `./sol2html < sol-10x6-N.symm > sol-10x6-N.html`
 
 # Build and run
@@ -99,6 +102,20 @@ containing SVG drawings.
 - sol-15x4-N.html
 - sol-20x3.html
 - sol-20x3-N.html
+
+## Notes
+
+I started this project after downloading a 3D printed pentomino packing
+puzzle from Thingiverse and wondering how many ways there were to solve
+it. The object included the 12 pieces and a 10x6 board to hold them (but
+unfortunately did not include the other board sizes).
+
+Initially I created a solver that generated a boolean satisfiability
+equation (SAT) in the .cnf format and used zChaff to solve it. This
+worked, but runs very slowly and only finds one solution before exiting.
+So I gave up on that and did the backtracking version. It doesn't take
+long, maybe a few minutes in the worst case to find all solutions for a
+given grid width.
 
 ## Author
 

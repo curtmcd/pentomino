@@ -106,26 +106,6 @@ const vector<drawing_t> draw_flipped[] = {
     {}
 };
 
-struct point_t {
-    point_t(int _r, int _c) : r(_r), c(_c)
-    {
-    }
-
-    bool
-    operator==(const point_t &other) const
-    {
-	return (other.r == r && other.c == c);
-    }
-
-    bool
-    operator!=(const point_t &other) const
-    {
-	return (other.r != r || other.c != c);
-    }
-
-    int r, c;
-};
-
 struct grid_t {
     grid_t(int _w, int _h, bool allow_flipped) : w(_w), h(_h)
     {
