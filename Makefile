@@ -1,47 +1,41 @@
 CPP = g++
 DEBUG = -O2
 
-all: pent
+all: pent sol2svg
 
 pent: pent.cpp
 	$(CPP) $(DEBUG) -o pent pent.cpp
 
+sol2svg: sol2svg.cpp
+	$(CPP) $(DEBUG) -o sol2svg sol2svg.cpp
+
+#---------- Rules ----------
+
+# Split sol-AxB.txt into "sol A B", and
+# split sol-AxB-N.txt into "sol A B -N"
+splitname = $(subst x, ,$(subst N,-N,$(subst -, ,$(patsubst %.txt,%,$1))))
+
+%.txt: pent
+	./pent -w $(word 2,$(call splitname,$@)) $(word 4,$(call splitname,$@)) > tmp.txt
+	mv tmp.txt $@
+	@wc -l $@ | awk '{ print $$1 / (1 + $(word 3,$(call splitname,$@))), "solutions" }'
+
+%.html: %.txt sol2svg
+	./sol2svg < $< > $@
+
 #---------- Testing ----------
 
-# ${1}=width, ${2}=height, ${3}=flip, ${4}=outfile
-define run
-	./pent -w ${1} ${3} > sol-${1}x${2}${3}.txt
-	@wc -l sol-${1}x${2}${3}.txt | \
-		awk '{ print $$1 / (1 + ${2}), "solutions" }'
-endef
+SIZES = 10x6 12x5 15x4 20x3
 
-test: pent
-	$(call run,10,6,)
-	$(call run,10,6,-N)
-	$(call run,12,5,)
-	$(call run,12,5,-N)
-	$(call run,15,4,)
-	$(call run,15,4,-N)
-	$(call run,20,3,)
-	$(call run,20,3,-N)
+SOL_TXT = $(foreach size,$(SIZES),sol-$(size).txt sol-$(size)-N.txt)
+SVG_TXT = $(foreach size,$(SIZES),sol-$(size).html sol-$(size)-N.html)
 
-# ${1}=width, ${2}=height, ${3}=flip, ${4}=outfile
-define run_svg
-	./pent -w ${1} ${3} -f svg > sol-${1}x${2}${3}.html
-endef
+test: $(SOL_TXT)
 
-test_svg: pent
-	$(call run_svg,10,6,)
-	$(call run_svg,10,6,-N)
-	$(call run_svg,12,5,)
-	$(call run_svg,12,5,-N)
-	$(call run_svg,15,4,)
-	$(call run_svg,15,4,-N)
-	$(call run_svg,20,3,)
-	$(call run_svg,20,3,-N)
+test_svg: $(SVG_TXT)
 
 #---------- Clean ----------
 
 .PHONY: clean
 clean:
-	$(RM) pent *.o sol-*.txt
+	$(RM) pent sol2svg *.o sol-*.txt tmp.txt sol-*.html
