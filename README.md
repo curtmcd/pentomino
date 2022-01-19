@@ -1,20 +1,21 @@
-# Pentomino packing
+# Pentomino Packing
+
+This set of programs finds all possible ways to pack the twelve
+pentominos into a rectangular grid of size 10x6, 12x5, 15x4 or 20x3.  It
+will also render those packings as HTML5 files using SVG drawings.
 
 ![Screenshot of 10x6 solution](/sol-10x6-N.png)
 
-This application finds all possible ways to pack the twelve pentominos
-into a rectangular grid of size 10x6, 12x5, 15x4 or 20x3. It will also
-render those packings as HTML5 files using SVG drawings.
-
 # Programs
 
-The programs here are written in C++11 and are ready to be compiled on
-a GNU/Linux system using `gmake`.
+The programs here are written in C++11 and are ready to be compiled on a
+basic GNU/Linux system using `gmake` (see compilation instructions
+below).
 
 ## pent
 
 This program generates the packings and writes them to stdout in a
-simple ASCII format like this:
+simple ASCII format like this, with a blank line between each packing.
 
     I I I I I L L L L M 
     P P P W W X U U L M 
@@ -23,24 +24,28 @@ simple ASCII format like this:
     V Z Z Z R R Y T T T 
     V V V Z R Y Y Y Y T 
 
-Options include the ability to select the grid size (by width) and whether
-or not flipping is disallowed (-N).
+Options include the ability to select the grid size (`-w <width>`) and whether
+or not flipping is disallowed (`-N`).
+
+Example: `./pent -w 10 -N > sol-10x6-N.txt`
 
 ## symmetry
 
 This program is a filter that reads from stdin expecting the output
-format f **pent**. It removes all packings that are redundant through
+format of **pent**. It removes all packings that are redundant through
 the symmetries of rotation, horizontal flipping and vertical flipping,
 and writes the remaining packings to stdout.
 
 Six of the pentominos are not rotationally symmetric. If they are
 allowed to be flipped, the number of packings increases substantially.
 
-Eliminating symmetries from the non-flipping pentominos reduces the
+Eliminating symmetries from the flips-allowed packings reduces the
+number of packings to one eighth.
+
+Eliminating symmetries from the flips-disallowed packings reduces the
 number of packings to one half.
 
-Eliminating symmetries from the flipping pentominos reduces the number
-of packings to one eighth.
+Example: `./symmetry < sol-10x6-N.txt > sol-10x6-N.symm`
 
 ## sol2html
 
@@ -51,13 +56,16 @@ size of each SVG picture and the number of pictures per column.
 Point your browser at an output file to render
 graphic drawings of the packings.
 
+Example 1: `./sol2html < sol-10x6-N.txt > sol-10x6-N-huge.html`
+Example 2: `./sol2html < sol-10x6-N.symm > sol-10x6-N.html`
+
 # Build and run
 
 Running `make` compiles the programs.
 
 Running `make all` is comprehensive and equivalent to `make test_html`.
 
-Running `make test_sol' produces output files for all combinations of flags:
+Running `make test_sol` produces output files for all combinations of flags:
 
 - sol-10x6.txt
 - sol-10x6-N.txt
@@ -68,7 +76,7 @@ Running `make test_sol' produces output files for all combinations of flags:
 - sol-20x3.txt
 - sol-20x3-N.txt
 
-Running 'make test_symm' processes these output files to remove redundant
+Running `make test_symm` processes these output files to remove redundant
 symmetries, producing files in the same format:
 
 - sol-10x6.symm
@@ -84,7 +92,7 @@ Running `make test_html` processes the .symm files into .html files
 containing SVG drawings.
 
 - sol-10x6.html
-- sol-10x6-N.html (title screenshot)
+- sol-10x6-N.html _(title screenshot)_
 - sol-12x5.html
 - sol-12x5-N.html
 - sol-15x4.html
@@ -95,5 +103,5 @@ containing SVG drawings.
 ## Author
 
 - [Profile](https://github.com/curtmcd "Curt McDowell")
-- Email *coder＠fishlet.com*
+- Email: *coder＠fishlet.com*
 - [Website](https://www.fishlet.com)
