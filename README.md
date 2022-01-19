@@ -36,7 +36,7 @@ Example: `./pent -w 10 -N > sol-10x6-N.txt`
 This program is a filter that reads from stdin expecting the output
 format of **pent**. It removes all packings that are redundant through
 the symmetries of rotation, horizontal flipping and vertical flipping,
-and writes the remaining packings to stdout.
+and writes the remaining packings to stdout in the same format.
 
 Six of the pentominos are not rotationally symmetric. If they are
 allowed to be flipped, the number of packings increases substantially.
@@ -51,12 +51,14 @@ Example: `./symmetry < sol-10x6-N.txt > sol-10x6-N.symm`
 
 ## sol2html
 
-This program is a filter that reads the output of **pent** or **symmetry**
-and generates an HTML file. Command line options allow setting the
-size of each SVG picture and the number of pictures per column.
+This program is a filter that reads from stdin expecting the same format
+as output by **pent** or **symmetry**. It writes to stdout an HTML page
+containing a table of SVG pictures. Command line options allow setting
+the size of each SVG picture (`-W 120`) and the number of pictures per
+column (`-C 8`).
 
-Point your browser at an output file to render
-graphic drawings of the packings.
+To see the output in your browser, dump the stdout into a .html file and
+point your browser at it (`file://home/blah/blah/sol-10x6.html`).
 
 Example 1: `./sol2html < sol-10x6-N.txt > sol-10x6-N-huge.html`
 
