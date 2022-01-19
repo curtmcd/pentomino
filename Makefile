@@ -1,13 +1,17 @@
-CPP = g++
+CXX = g++
+#DEBUG = -g
 DEBUG = -O2
+CPPFLAGS = $(DEBUG) -Wall -Werror
 
-all: pent sol2svg
+.PHONY: progs full
+progs: pent symmetry sol2html
+all: test_html
 
 pent: pent.cpp
-	$(CPP) $(DEBUG) -o pent pent.cpp
 
-sol2svg: sol2svg.cpp
-	$(CPP) $(DEBUG) -o sol2svg sol2svg.cpp
+symmetry: symmetry.cpp
+
+sol2html: sol2html.cpp
 
 #---------- Rules ----------
 
@@ -16,26 +20,32 @@ sol2svg: sol2svg.cpp
 splitname = $(subst x, ,$(subst N,-N,$(subst -, ,$(patsubst %.txt,%,$1))))
 
 %.txt: pent
-	./pent -w $(word 2,$(call splitname,$@)) $(word 4,$(call splitname,$@)) > tmp.txt
-	mv tmp.txt $@
+	./pent -w $(word 2,$(call splitname,$@)) $(word 4,$(call splitname,$@)) > $@
 	@wc -l $@ | awk '{ print $$1 / (1 + $(word 3,$(call splitname,$@))), "solutions" }'
 
-%.html: %.txt sol2svg
-	./sol2svg < $< > $@
+%.symm: %.txt symmetry
+	./symmetry < $< > $@
+
+%.html: %.symm sol2html
+	./sol2html < $< > $@
 
 #---------- Testing ----------
 
 SIZES = 10x6 12x5 15x4 20x3
 
-SOL_TXT = $(foreach size,$(SIZES),sol-$(size).txt sol-$(size)-N.txt)
-SVG_TXT = $(foreach size,$(SIZES),sol-$(size).html sol-$(size)-N.html)
+ALL_SOL = $(foreach size,$(SIZES),sol-$(size).txt sol-$(size)-N.txt)
+ALL_SYMM = $(foreach size,$(SIZES),sol-$(size).symm sol-$(size)-N.symm)
+ALL_HTML = $(foreach size,$(SIZES),sol-$(size).html sol-$(size)-N.html)
 
-test: $(SOL_TXT)
+test_sol: $(ALL_SOL)
 
-test_svg: $(SVG_TXT)
+test_symm: $(ALL_SYMM)
+
+test_html: $(ALL_HTML)
 
 #---------- Clean ----------
 
 .PHONY: clean
 clean:
-	$(RM) pent sol2svg *.o sol-*.txt tmp.txt sol-*.html
+	$(RM) pent symmetry sol2html *.o
+	$(RM) sol-*.txt sol-*.symm sol-*.html

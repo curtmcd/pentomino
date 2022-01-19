@@ -5,14 +5,19 @@ Pentomino Packing Problem
 According to Wikipedia:
 
 Box size 6 x 10
-	2339 solutions allowing reflection of pieces but not
-		reflection or rotation of entire puzzle
+	2339 solutions allowing flipping pieces but not
+		rotation/H-flip/V-flip symmetries of the entire grid
+	46 solutions disallowing both flipping pieces and symmetries
+		(with the selection of flips used here)
 Box size 5 x 12
-	1010 solutions
+	1010 solutions disallowing symmetries
+	36 solutions disallowing flipping pieces and symmetries
 Box size 4 x 15
-	368 solutions
+	368 solutions disallowing symmetries
+	15 solutions disallowing flipping pieces and symmetries
 Box size 3 x 20
-	2 solutions
+	2 solutions disallowing symmetries
+	0 solutions disallowing flipping pieces and symmetries
 Box size 8 x 8 with a 2 x 2 hole in the middle
 	65 solutions
 Box size 2 x 3 x 10

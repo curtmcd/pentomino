@@ -60,10 +60,10 @@ const vector<drawing_t> draw_normal[] = {
      { R, L, D, R, D 	},
      { R, D, L, L 	},
      { D, R, D, L 	}},
-    {{ R, R, R, L, D 	},	// Y
-     { D, D, L, R, D 	},
-     { D, L, R, R, R 	},
-     { D, R, L, D, D 	}},
+    {{ R, D, U, R, R 	},	// Y
+     { D, L, R, D, D 	},
+     { D, R, L, L, L 	},
+     { D, D, R, L, D 	}},
     {{ D, L, R, R, L, D }},	// X
     {{ D, R, R, L, D 	},	// R
      { R, L, D, L, R, D },
@@ -94,10 +94,10 @@ const vector<drawing_t> draw_flipped[] = {
      { D, L, D, R 	},
      { R, L, D, R, R 	},
      { R, D, L, D 	}},
-    {{ R, D, U, R, R 	},	// Y
-     { D, L, R, D, D 	},
-     { D, R, L, L, L 	},
-     { D, D, R, L, D 	}},
+    {{ R, R, R, L, D 	},	// Y
+     { D, D, L, R, D 	},
+     { D, L, R, R, R 	},
+     { D, R, L, D, D 	}},
     {},
     {{ D, L, L, R, D 	},	// R
      { D, L, R, D, R 	},
@@ -227,7 +227,7 @@ struct grid_t {
 	// Try each remaining shape
 	for (int s = 0; s < 12; s++)
 	    if (!pieces[s].placed)
-		for (int o = 0; o < shapes[s].size(); o++) {
+		for (int o = 0; o < (int)shapes[s].size(); o++) {
 		    if (place(r, c, s, o, -1, s)) {
 			pieces[s].placed = true;
 			pieces[s].r = r;
@@ -265,7 +265,7 @@ usage()
 int
 main(int argc, char *argv[])
 {
-    int c, w = 10, h;
+    int c, w = 10;
     bool allow_flipped = true;
 
     while ((c = getopt(argc, argv, "w:Nh")) >= 0)

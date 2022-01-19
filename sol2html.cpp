@@ -1,20 +1,19 @@
 // Pentomino Packing - by Curt McDowell 2022-01-17
 //
-// Utility to convert output of pent.cpp to SVG drawings
+// Filter utility to convert output of pent.cpp to SVG drawings in HTML
 
 #include <cassert>
 #include <iostream>
 #include <iomanip>
-#include <fstream>
 #include <cstring>
 #include <getopt.h>
 #include <vector>
 
 using namespace std;
 
-#define SVG_DEFAULT_W	120
-#define SVG_COLS	6
-#define SVG_MARGIN	5
+#define DEFAULT_W		120
+#define DEFAULT_COLS		8
+#define DEFAULT_MARGIN		2
 
 static const char shape_names[] = ".ILMWVZUPYXRT";
 
@@ -62,7 +61,7 @@ sol_read(istream &f, int &w, int &h)
 		exit(1);
 	    }
 	}
-	assert(row.size() == w);
+	assert((int)row.size() == w);
 	grid.push_back(row);
     }
 
@@ -164,14 +163,6 @@ shape_to_path(grid_t &grid, int w, int h, int s)
 }
 
 void
-usage()
-{
-    cerr << "Usage: sol2svg [-W <width>] < sol.txt > sol.html" << endl;
-    cerr << "  -W <width>      Specify SVG drawing width (height gets calculated)" << endl;
-    exit(1);
-}
-
-void
 show_text(grid_t &grid)
 {
     for (auto row : grid) {
@@ -185,20 +176,24 @@ show_text(grid_t &grid)
 }
 
 void
-grid2svg(grid_t &grid, int w, int h, int W)
+grid2svg(grid_t &grid, int w, int h, int svg_w)
 {
-    int H = W * h / w;
+    int draw_x0 = DEFAULT_MARGIN;
+    int draw_y0 = DEFAULT_MARGIN;
+    int draw_w = svg_w - 2 * DEFAULT_MARGIN;
+    int draw_h = svg_w * h / w;
+    int svg_h = draw_h + 2 * DEFAULT_MARGIN;
 
     auto x = [=](int c) -> int {
-		 return (W * c) / w + SVG_MARGIN;
+		 return draw_x0 + (draw_w * c) / w;
 	     };
 
     auto y = [=](int r) -> int {
-		 return (H * r) / h + SVG_MARGIN;
+		 return draw_y0 + (draw_h * r) / h;
 	     };
 
-    cout << "<svg width=\"" << (W + 2 * SVG_MARGIN) <<
-	"\" height=\"" << (H + 2 * SVG_MARGIN) << "\">" << endl;
+    cout << "<svg width=\"" << svg_w <<
+	"\" height=\"" << svg_h << "\">" << endl;
 
     for (int s = 0; s < 12; s++) {
 	path_t path(shape_to_path(grid, w, h, s));
@@ -219,26 +214,60 @@ grid2svg(grid_t &grid, int w, int h, int W)
 	cout << "\" />" << endl;
     }
 
+    for (int r = 1; r < h; r++)
+	cout << " <line style=\"stroke:black;stroke-opacity:0.1;stroke-width:1\" " <<
+	    "x1=\"" << x(0) << "\" y1=\"" << y(r) <<
+	    "\" x2=\"" << x(w) << "\" y2=\"" << y(r) << "\" />" << endl;
+
+    for (int c = 1; c < w; c++)
+	cout << " <line style=\"stroke:black;stroke-opacity:0.1;stroke-width:1\" " <<
+	    "x1=\"" << x(c) << "\" y1=\"" << y(0) <<
+	    "\" x2=\"" << x(c) << "\" y2=\"" << y(h) << "\" />" << endl;
+
     cout << "</svg>" << endl;
+}
+
+void
+usage()
+{
+    cerr << "Usage: sol2html [-W <width>] [-C <cols>] < sol.txt > sol.html" << endl;
+    cerr << "  -W <width>      Specify SVG width (height gets calculated)" << endl;
+    cerr << "  -C <cols>       Number of columns in table" << endl;
+    exit(1);
 }
 
 int
 main(int argc, char *argv[])
 {
-    int W = SVG_DEFAULT_W;
+    int W = DEFAULT_W;
+    int C = DEFAULT_COLS;
     int c;
 
-    while ((c = getopt(argc, argv, "w:")) >= 0)
+    while ((c = getopt(argc, argv, "W:C:")) >= 0)
 	switch (c) {
 	case 'W':
 	    W = atoi(optarg);
+	    break;
+	case 'C':
+	    C = atoi(optarg);
 	    break;
 	default:
 	    usage();
 	    break;
 	}
 
+    cout << "<html>" << endl;
+    cout << " <head>" << endl;
+    cout << "  <title>Packed Pentominos</title>" << endl;
+    cout << " </head>" << endl;
+    cout << "<body>" << endl;
+
     int col = 0;
+
+    cout << "<table>" << endl;
+    cout << " <tr>" << endl;
+
+    int count = 0;
 
     while (true) {
 	int w, h;
@@ -247,15 +276,26 @@ main(int argc, char *argv[])
 	if (h == 0)
 	    break;
 
+	count++;
+
 	//show_text(grid);
 
+	cout << "  <td>" << endl;
+	cout << "  " << count << "<br>" << endl;
 	grid2svg(grid, w, h, W);
+	cout <<  "  </td>" << endl;
 
-	if (++col == SVG_COLS) {
+	if (++col == C) {
 	    col = 0;
-	    cout << "<br>" << endl;
+	    cout << " </tr>" << endl;
+	    cout << " <tr>" << endl;
 	}
     }
+
+    cout << " </tr>" << endl;
+    cout << "</table>" << endl;
+    cout << "</body>" << endl;
+    cout << "</html>" << endl;
 
     return 0;
 }
