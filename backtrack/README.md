@@ -6,7 +6,7 @@ rectangular grid of size 10x6, 12x5, 15x4 or 20x3. It optionally
 eliminates symmetry redundancies and renders packings as pretty HTML5
 files using SVG drawings.
 
-![Screenshot of 10x6 solution](/sol-10x6-N.png)
+![Screenshot of 10x6 solution](/backtrack/sol-10x6-N.png)
 
 # Programs
 
