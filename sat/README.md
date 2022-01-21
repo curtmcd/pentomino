@@ -6,7 +6,7 @@ This is a solution using the techniques of Boolean Satisfiability.
 
 For exquisite detail on how this works, please see the article on my website.
 
-- [Pentomino Packing on fishlet.com](https://fishlet.com/games/pentomino/)
+- [Pentomino Packing on fishlet.com](https://www.fishlet.com/2022/01/21/pentomino/)
 
 ## How it Works
 

@@ -107,6 +107,10 @@ containing SVG drawings.
 
 ## Notes
 
+For more detail, please see the article on my website.
+
+- [Pentomino Packing on fishlet.com](https://www.fishlet.com/2022/01/21/pentomino/)
+
 I started this project after downloading a 3D printed pentomino packing
 puzzle from Thingiverse and wondering how many ways there were to solve
 it. The object included the 12 pieces and a 10x6 board to hold them (but

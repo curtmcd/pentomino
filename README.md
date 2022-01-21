@@ -11,7 +11,7 @@ Here, the problem of solving pentomino packs is solved in two ways:
 
 See the article on my website for a full description:
 
-- [Pentomino Packing on fishlet.com](https://fishlet.com/games/pentomino/)
+- [Pentomino Packing on fishlet.com](https://www.fishlet.com/2022/01/21/pentomino/)
 
 ## Author
 
